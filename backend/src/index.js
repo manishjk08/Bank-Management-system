@@ -21,12 +21,6 @@ app.use(cors());
 app.use(morgan('dev'));
 app.use(express.json());
 
-// Routes
-app.use('/api/auth', authRoutes);
-app.use('/api/accounts', accountRoutes);
-app.use('/api/transactions', transactionRoutes);
-app.use('/api/fx', fxRoutes);
-
 // Rate limiting — 100 requests per 15 minutes per IP
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -36,7 +30,14 @@ const limiter = rateLimit({
 
 app.use('/api/', limiter);
 
-// Health check route
+// Routes
+app.use('/api/auth', authRoutes);
+app.use('/api/accounts', accountRoutes);
+app.use('/api/transactions', transactionRoutes);
+app.use('/api/fx', fxRoutes);
+
+
+
 app.get('/', (req, res) => {
   res.json({ message: 'Banking API is running.' });
 });

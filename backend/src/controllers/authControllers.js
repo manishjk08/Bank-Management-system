@@ -27,7 +27,7 @@ const register = async (req, res) => {
       await accountModels.createDefaultAccount(user.id, accountNumber);
     }
 
-    // Log the action
+    
     await auditModel.log(user.id, 'User registered','users',user.id)
 
     res.status(201).json({ message: 'Registration successful.', user });
@@ -66,7 +66,7 @@ const login = async (req, res) => {
       { expiresIn: '24h' }
     );
 
-    // Log the action
+    
     await auditModel.log(user.id, 'User logged in','users',user.id);
 
     res.json({

@@ -69,12 +69,12 @@ const accountModel = {
         );
         return result.rows[0];
     },
-    createAccount: async ({ user_id, account_number, accountType, client }) => {
-        const result = await pool.query(
+    createAccount: async ({ user_id, account_number, account_type, client }) => {
+        const result = await client.query(
             `INSERT INTO accounts (user_id, account_number, account_type)
      VALUES ($1, $2, $3)
      RETURNING *`,
-            [user_id, account_number, accountType]
+            [user_id, account_number, account_type]
 
         );
         return result.rows[0];

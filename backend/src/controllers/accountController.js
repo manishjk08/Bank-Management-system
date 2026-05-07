@@ -27,7 +27,7 @@ const getAccountById = async (req, res) => {
     res.status(500).json({ error: 'Server error.' });
   }
 };
-//POST api/account/new create new accounts
+//POST api/accounts/create create new accounts
 
 const createNewAccount=async(req,res)=>{
   

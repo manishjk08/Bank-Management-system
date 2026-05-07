@@ -21,35 +21,35 @@ const transfer = async (req, res) => {
     return res.status(400).json({ error: 'from_account_id, to_account_number and amount are required.' });
   }
 
-  if (!Number.isFinite(amount)||Number(amount)<=0) {
+  if (!Number.isFinite(amount) || Number(amount) <= 0) {
     return res.status(400).json({ error: 'Amount must be a positive number.' });
   }
 
-  // Get a client from pool so we can use a transaction (rollback on failure)
+
   const client = await pool.connect();
 
   try {
     await client.query('BEGIN');
 
-    // 1. Verify the sender's account belongs to the logged-in user
+    // find sender account and lock it for update
     const sender = await accountModels.findByIdAndUserIdForUpdate(
-      from_account_id,req.user.id,client)
+      from_account_id, req.user.id, client)
 
     if (!sender) {
       await client.query('ROLLBACK');
       return res.status(404).json({ error: 'Sender account not found or unauthorized.' });
     }
 
-    // 2. Check sufficient balance
+    //  Check sufficient balance
     if (parseFloat(sender.balance) < parseFloat(amount)) {
       await client.query('ROLLBACK');
       return res.status(400).json({ error: 'Insufficient balance.' });
     }
 
-    // 3. Find the receiver account by account number
+    //  Find the receiver account by account number
     const receiver = await accountModels.findByAccountNumber(
-      to_account_number,client)
-    
+      to_account_number, client)
+
 
     if (!receiver) {
       await client.query('ROLLBACK');
@@ -60,33 +60,33 @@ const transfer = async (req, res) => {
       await client.query('ROLLBACK');
       return res.status(400).json({ error: 'Cannot transfer to the same account.' });
     }
-      // deduct from sender and add to receiver
-      const updatedSender=await accountModels.deductBalance(sender.id,amount,client);
-      if(!updatedSender){
-        await client.query('ROLLBACK');
-        return res.status(400).json({ error: 'insufficient balance.' });
-      }
-      await accountModels.addBalance(receiver.id,amount,client);
+    // deduct from sender and add to receiver
+    const updatedSender = await accountModels.deductBalance(sender.id, amount, client);
+    if (!updatedSender) {
+      await client.query('ROLLBACK');
+      return res.status(400).json({ error: 'insufficient balance.' });
+    }
+    await accountModels.addBalance(receiver.id, amount, client);
 
-    
-    // 6. Record the transaction
-    const txResult = await transactionModel.create(
-      sender.id,receiver.id,amount,sender.currency,
-      'transfer','completed',description,client,
+
+    //  Record the transaction
+    const transactionRecord = await transactionModel.create(
+      sender.id, receiver.id, amount, sender.currency,
+      'transfer', 'completed', description, client,
     );
-    
-    // 7. Audit log
-    await auditModel.log(req.user.id,'Transfer Completed','transactions',
-      txResult.id,
-      {amount,from:sender.account_number,to:receiver.account_number},client
+
+    //  Audit log
+    await auditModel.log(req.user.id, 'Transfer Completed', 'transactions',
+      transactionRecord.id,
+      { amount, from: sender.account_number, to: receiver.account_number }, client
     )
-    
+
 
     await client.query('COMMIT');
 
     res.status(201).json({
       message: 'Transfer successful.',
-      transaction: txResult
+      transaction: transactionRecord
     });
 
   } catch (err) {
@@ -100,7 +100,7 @@ const transfer = async (req, res) => {
 
 // POST /api/transactions/deposit  - admin only
 const deposit = async (req, res) => {
-  const {to_account_id, amount, description } = req.body;
+  const { to_account_id, amount, description } = req.body;
 
   if (!to_account_id || !amount || amount <= 0) {
     return res.status(400).json({ error: 'Valid account_id and amount are required.' });
@@ -112,7 +112,7 @@ const deposit = async (req, res) => {
     await client.query('BEGIN');
 
     const account = await accountModels.findByIdforUpdate(
-      to_account_id,client
+      to_account_id, client
     )
 
     if (!account) {
@@ -122,20 +122,20 @@ const deposit = async (req, res) => {
 
     await accountModels.addBalance(to_account_id, amount, client);
 
-    const txResult = await transactionModel.createDeposit(
+    const transactionRecord = await transactionModel.createDeposit(
       to_account_id, amount, account.currency, description, client
     );
 
-    await auditModel.log(req.user.id,'Deposit Completed','transactions',
-      txResult.id,
-      {amount,to:account.account_number},client
+    await auditModel.log(req.user.id, 'Deposit Completed', 'transactions',
+      transactionRecord.id,
+      { amount, to: account.account_number }, client
     )
 
     await client.query('COMMIT');
 
     res.status(201).json({
       message: 'Deposit successful.',
-      transaction: txResult
+      transaction: transactionRecord
     });
 
   } catch (err) {

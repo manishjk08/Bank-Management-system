@@ -10,6 +10,8 @@ import authRoutes from './routes/authRoutes.js';
 import accountRoutes from './routes/accountRoutes.js';
 import transactionRoutes from './routes/transactionRoutes.js';
 import fxRoutes from './routes/fxRoutes.js';
+import forgetPasswordRoutes from './routes/forgetPasswordRoutes.js';
+import resetPasswordRoutes from './routes/resetPasswordRoutes.js';
 dotenv.config();
 
 const app=express();
@@ -35,6 +37,8 @@ app.use('/api/auth', authRoutes);
 app.use('/api/accounts', accountRoutes);
 app.use('/api/transactions', transactionRoutes);
 app.use('/api/fx', fxRoutes);
+app.use('/api/auth',forgetPasswordRoutes);
+app.use('/api/auth',resetPasswordRoutes);
 
 
 

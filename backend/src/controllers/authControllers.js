@@ -1,7 +1,7 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import userModel from '../models/userModels.js';
-import accountModels from '../models/accountModels.js';
+import accountModel from '../models/accountModels.js';
 import auditModel from '../models/auditModel.js';
 
 // POST /api/auth/register
@@ -24,7 +24,7 @@ const register = async (req, res) => {
 
     const accountNumber = 'ACC' + Date.now();
     if (user.role === 'customer') {
-      await accountModels.createDefaultAccount(user.id, accountNumber);
+      await accountModel.createDefaultAccount(user.id, accountNumber);
     }
 
     

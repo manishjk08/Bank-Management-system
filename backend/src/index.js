@@ -5,6 +5,7 @@ import morgan from 'morgan';
 import rateLimit from 'express-rate-limit';
 import dotenv from 'dotenv';
 import './config/db.js';
+import cookieParser from 'cookie-parser';
 
 import authRoutes from './routes/authRoutes.js';
 import accountRoutes from './routes/accountRoutes.js';
@@ -22,6 +23,7 @@ app.use(helmet());
 app.use(cors());
 app.use(morgan('dev'));
 app.use(express.json());
+app.use(cookieParser());
 
 // Rate limiting , 100 requests per 15 minutes per IP
 const limiter = rateLimit({

@@ -31,7 +31,7 @@ export const fetchAllAccounts = createAsyncThunk(
 export const makeDeposit = createAsyncThunk(
   'admin/deposit',
   async (
-    data: { account_id: number; amount: number; description?: string },
+    data: { to_account_id: number; amount: number; description?: string },
     { rejectWithValue }
   ) => {
     try {

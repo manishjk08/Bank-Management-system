@@ -36,7 +36,7 @@ const Admin = () => {
     e.preventDefault();
     if (!selectedAccount) return;
     dispatch(makeDeposit({
-      account_id: selectedAccount.id,
+      to_account_id: selectedAccount.id,
       amount: parseFloat(depositForm.amount),
       description: depositForm.description || undefined,
     }));

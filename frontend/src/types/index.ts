@@ -21,8 +21,8 @@ export interface Transaction {
   transaction_type: 'transfer' | 'deposit' | 'withdrawal';
   status: 'pending' | 'completed' | 'failed';
   description: string | null;
-  from_account: string | null;
-  to_account: string | null;
+  from_account_id: string | null;
+  to_account_id: string | null;
   created_at: string;
 }
 

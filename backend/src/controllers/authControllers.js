@@ -3,6 +3,9 @@ import jwt from 'jsonwebtoken';
 import userModel from '../models/userModels.js';
 import accountModel from '../models/accountModels.js';
 import auditModel from '../models/auditModel.js';
+import refreshTokenModel from '../models/RefreshTokenModel.js';
+import { generateAccessToken, generateRefreshToken } from '../utils/GenerateToken.js';
+import {refreshCookieOptions} from '../utils/CookieOptions.js';
 
 // POST /api/auth/register
 const register = async (req, res) => {
@@ -60,18 +63,22 @@ const login = async (req, res) => {
     }
 
     // Sign JWT
-    const token = jwt.sign(
-      { id: user.id, email: user.email, role: user.role },
-      process.env.JWT_SECRET,
-      { expiresIn: '24h' }
-    );
+    const accessToken = generateAccessToken(user);
+    const refreshToken = generateRefreshToken(user);
 
-    
+    const refreshExpiry = new Date();
+    refreshExpiry.setDate(refreshExpiry.getDate() + 7);
+        
+
+    await refreshTokenModel.storeToken(user.id, refreshToken,refreshExpiry,false);
+
+    res.cookie("refreshToken",refreshToken,refreshCookieOptions);
+
     await auditModel.log(user.id, 'User logged in','users',user.id);
 
     res.json({
       message: 'Login successful.',
-      token,
+      accessToken,
       user: {
         id: user.id,
         full_name: user.full_name,
@@ -86,4 +93,23 @@ const login = async (req, res) => {
   }
 };
 
-export { register, login };
+// post /api/auth/logout
+
+const logout=async(req,res)=>{
+  try{
+  const refreshToken=req.cookies.refreshToken
+
+if(refreshToken){
+  await refreshTokenModel.revokeToken(refreshToken)
+  res.clearCookie("refreshToken",refreshCookieOptions)
+  }
+return res.json({message:"Logout successfully"})
+  }
+  catch(error){
+    console.error(error);
+    res.status(500).json({error:'Server error'})
+  }
+}
+
+
+export { register, login, logout }

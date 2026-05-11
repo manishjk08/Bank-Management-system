@@ -1,96 +1,117 @@
-import { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { useAppDispatch, useAppSelector } from '../store/hook';
-import { registerUser, clearError } from '../store/slices/authSlice';
+import { useEffect } from "react";
+import {Link, useNavigate} from 'react-router-dom';
+import { useAppDispatch,useAppSelector } from "../store/hook";
+import  {registerUser,clearError} from '../store/slices/authSlice';
+import { useForm } from "react-hook-form"
+import type { SubmitHandler } from "react-hook-form";
+import type { RootState } from "../store";
 
-const Register = () => {
-  const dispatch = useAppDispatch();
-  const navigate = useNavigate();
-  const { loading, error } = useAppSelector((state) => state.auth);
+interface Inputs {
+  full_name:string,
+  email:string,
+  password:string
+}
 
-  const [form, setForm] = useState({ full_name: '', email: '', password: '' });
-  const [success, setSuccess] = useState(false);
+  const Register=()=>{
+  const navigate=useNavigate();
+  const dispatch=useAppDispatch();
+  const {loading,error}= useAppSelector((state:RootState)=>state.auth)
 
-  useEffect(() => {
-    return () => { dispatch(clearError()); };
-  }, []);
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<Inputs>()
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const result = await dispatch(registerUser(form));
-    if (registerUser.fulfilled.match(result)) {
-      setSuccess(true);
-      setTimeout(() => navigate('/login'), 2000);
+  const onSubmit: SubmitHandler<Inputs> = async(data)=>{
+    try {
+      await dispatch(registerUser({ 
+       full_name: data.full_name,
+       email: data.email,
+       password: data.password 
+      })).unwrap()
+
+      navigate('/login')
+
+    } catch (error) {
+      console.error('Registration failed',error)
     }
-  };
+  }
+
+    useEffect (()=>{
+      return ()=>{
+      dispatch(clearError())
+    };
+    },[dispatch])
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-950">
-      <div className="bg-slate-900 p-8 rounded-xl shadow-lg w-full max-w-md">
-        <h1 className="text-2xl font-bold text-blue-400 mb-2">🏦 BankingApp</h1>
-        <p className="text-slate-400 mb-6 text-sm">Create your account</p>
-
-        {error && (
-          <div className="bg-red-500/10 border border-red-500 text-red-400 px-4 py-2 rounded mb-4 text-sm">
-            {error}
-          </div>
-        )}
-        {success && (
-          <div className="bg-green-500/10 border border-green-500 text-green-400 px-4 py-2 rounded mb-4 text-sm">
-            Registration successful! Redirecting to login...
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm text-slate-400 mb-1">Full Name</label>
-            <input
-              type="text"
-              value={form.full_name}
-              onChange={(e) => setForm({ ...form, full_name: e.target.value })}
-              className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500"
-              placeholder="John Doe"
-              required
-            />
-          </div>
-          <div>
-            <label className="block text-sm text-slate-400 mb-1">Email</label>
-            <input
-              type="email"
-              value={form.email}
-              onChange={(e) => setForm({ ...form, email: e.target.value })}
-              className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500"
-              placeholder="john@example.com"
-              required
-            />
-          </div>
-          <div>
-            <label className="block text-sm text-slate-400 mb-1">Password</label>
-            <input
-              type="password"
-              value={form.password}
-              onChange={(e) => setForm({ ...form, password: e.target.value })}
-              className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500"
-              placeholder="••••••••"
-              required
-            />
-          </div>
-          <button
-            type="submit"
-            disabled={loading || success}
-            className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-50 py-2 rounded-lg font-semibold transition"
-          >
-            {loading ? 'Creating account...' : 'Register'}
-          </button>
-        </form>
-
-        <p className="text-slate-400 text-sm mt-4 text-center">
-          Already have an account?{' '}
-          <Link to="/login" className="text-blue-400 hover:underline">Sign in</Link>
-        </p>
-      </div>
+    <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded-lg shadow-md">
+  <h2 className="text-2xl font-bold mb-6 text-center text-gray-800">Create an Account</h2>
+  
+  {error && <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-md text-sm">{error}</div>}
+  
+  <form onSubmit={handleSubmit(onSubmit)}>
+    <div className="mb-4">
+      <input
+        type="text"
+        placeholder="Full Name"
+        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        {...register("full_name", { 
+          required: "Full name is required",
+          minLength: {
+            value: 2,
+            message: "Name must be at least 2 characters"
+          }
+        })}
+      />
+      {errors.full_name && <span className="text-red-500 text-sm mt-1 block">{errors.full_name.message}</span>}
     </div>
-  );
-};
 
+    <div className="mb-4">
+      <input
+        type="email"
+        placeholder="Email"
+        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        {...register("email", { 
+          required: "Email is required",
+          pattern: {
+            value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+            message: "Invalid email address"
+          }
+        })}
+      />
+      {errors.email && <span className="text-red-500 text-sm mt-1 block">{errors.email.message}</span>}
+    </div>
+
+    <div className="mb-6">
+      <input
+        type="password"
+        placeholder="Password"
+        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        {...register("password", { 
+          required: "Password is required",
+          minLength: {
+            value: 6,
+            message: "Password must be at least 6 characters"
+          }
+        })}
+      />
+      {errors.password && <span className="text-red-500 text-sm mt-1 block">{errors.password.message}</span>}
+    </div>
+
+    <button 
+      type="submit" 
+      disabled={loading}
+      className="w-full bg-blue-500 text-white py-2 rounded-md hover:bg-blue-600 transition-colors disabled:bg-blue-300 disabled:cursor-not-allowed"
+    >
+      {loading ? "Registering..." : "Register"}
+    </button>
+  </form>
+  
+  <p className="mt-4 text-center text-gray-600">
+    Already have an account? <Link to="/login" className="text-blue-500 hover:text-blue-600">Login here</Link>
+  </p>
+</div>
+  )
+}
 export default Register;

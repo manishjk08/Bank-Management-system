@@ -1,42 +1,54 @@
-import { Link, useNavigate } from 'react-router-dom';
-import { useAppDispatch, useAppSelector } from '../store/hook';
-import { logout } from '../store/slices/authSlice';
+import { Link } from 'react-router-dom'
+import { logout } from '../store/slices/authSlice'
+import { useAppDispatch, useAppSelector } from '../store/hook'
 
-const Navbar = () => {
-  const dispatch = useAppDispatch();
-  const navigate = useNavigate();
-  const { user } = useAppSelector((state) => state.auth);
+const navbar = () => {
+const dispatch=useAppDispatch()
 
-  const handleLogout = () => {
-    dispatch(logout());
-    navigate('/login');
-  };
+const{user}=useAppSelector((state)=>state.auth)
+const handleLogout=()=>{
+  dispatch(logout())
+}
 
   return (
-    <nav className="bg-slate-900 text-white px-6 py-4 flex justify-between items-center shadow-md">
-      <Link to="/dashboard" className="text-xl font-bold text-blue-400">
-        🏦 BankingApp
-      </Link>
-      <div className="flex items-center gap-6 text-sm">
-        <Link to="/dashboard" className="hover:text-blue-400 transition">Dashboard</Link>
-        <Link to="/accounts" className="hover:text-blue-400 transition">Accounts</Link>
-        <Link to="/transactions" className="hover:text-blue-400 transition">Transactions</Link>
-        <Link to="/transfer" className="hover:text-blue-400 transition">Transfer</Link>
-        {user?.role === 'admin' && (
-          <Link to="/admin" className="hover:text-yellow-400 transition">Admin</Link>
-        )}
-        <div className="flex items-center gap-3 ml-4 border-l border-slate-700 pl-4">
-          <span className="text-slate-400">{user?.full_name}</span>
-          <button
-            onClick={handleLogout}
-            className="bg-red-600 hover:bg-red-700 px-3 py-1 rounded text-white transition"
-          >
-            Logout
-          </button>
+    <div>
+      <nav className="bg-blue-100  shadow-md">
+      <div className="max-w-7xl mx-auto px-4">
+      <div className="flex items-center justify-between h-16">
+      
+    
+      <div className="text-black font-bold text-xl">
+        BankApp
+      </div>
+
+      
+      <div className="flex spacblack">
+        <Link to="/dashboard" className="px-4 py-2 text-black  hover:text-[#8A7650] rounded-md transition">
+          Dashboard
+        </Link>
+        <Link to="/accounts" className="px-4 py-2 text-black  hover:text-[#8A7650] rounded-md transition">
+          Accounts
+        </Link>
+        <Link to="/transfer" className="px-4 py-2 text-black  hover:text-[#8A7650] rounded-md transition">
+          Transfer
+        </Link>
+        <Link to="/transaction" className="px-4 py-2 text-black  hover:text-[#8A7650] rounded-md transition">
+          Transaction
+        </Link>
+        
+        
+        <button onClick={handleLogout} className="px-4 py-2 text-black hover:bg-blue-200 rounded-md transition">
+          Logout
+        </button>
+        <div className='px-4 py-2'>
+          {user?(user.full_name).toUpperCase():''}
         </div>
       </div>
-    </nav>
-  );
-};
+    </div>
+  </div>
+</nav>
+    </div>
+  )
+}
 
-export default Navbar;
+export default navbar

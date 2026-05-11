@@ -16,7 +16,7 @@ const forgetPassword = async (req, res) => {
         const hashedToken = crypto.createHash('sha256').update(resetToken).digest('hex')
         const expires = new Date(Date.now() + 3600000)
         const result = await resetPasswordModel.createResetToken(user.id, hashedToken, expires);
-        const resetUrl = `http://localhost:5173/login/${resetToken}`;
+        const resetUrl = `http://localhost:5173/reset-password/${resetToken}`;
         const message = `You requested a password reset. Please click the following link to reset your password: ${resetUrl}. 
    This link will expire in 1 hour.`
 

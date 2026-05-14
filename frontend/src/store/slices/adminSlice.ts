@@ -1,9 +1,11 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import api from '../../services/api';
-import type {  AdminAccount } from '../../types';
+import type { Account,PendingAccount } from '../../types';
+
 
 interface AdminState {
-  allAccounts: AdminAccount[]
+  allAccounts: Account[]
+  pendingAccounts:PendingAccount[]
   loading: boolean;
   error: string | null;
   depositSuccess: boolean;
@@ -11,9 +13,11 @@ interface AdminState {
 
 const initialState: AdminState = {
   allAccounts: [],
+  pendingAccounts:[],
   loading: false,
   error: null,
   depositSuccess: false,
+
 };
 
 export const fetchAllAccounts = createAsyncThunk(
@@ -39,6 +43,33 @@ export const makeDeposit = createAsyncThunk(
       return res.data;
     } catch (err: any) {
       return rejectWithValue(err.response?.data?.error || 'Deposit failed.');
+    }
+  }
+);
+export const PendingAccounts=createAsyncThunk(
+  'admin/pending_request',
+  async(_,{rejectWithValue})=>{
+    try {
+      const res=await api.get('accounts/pending_accounts')
+      return res.data.accounts
+    } catch (err:any) {
+      return rejectWithValue(err.response?.data?.error || ' failed to fetch accunts.')
+    }
+  }
+)
+
+export const ApproveAccounts=createAsyncThunk(
+  'admin/approve',
+  async (
+    data:{
+      request_id:string,
+    approve:string;
+  },{rejectWithValue})=>{
+    try {
+      const res=await api.post(`/approve/${data.request_id}`)
+      return res.data
+    } catch (error) {
+      return rejectWithValue(error||'Approved failed')
     }
   }
 );
@@ -78,7 +109,20 @@ const adminSlice = createSlice({
       .addCase(makeDeposit.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
-      });
+      })
+      .addCase(PendingAccounts.pending,(state)=>{
+        state.loading=true;
+        state.error=null
+      })
+       .addCase(PendingAccounts.fulfilled,(state,action)=>{
+        state.loading=true;
+        state.error=null;
+        state.pendingAccounts=action.payload
+      })
+       .addCase(PendingAccounts.rejected,(state)=>{
+        state.loading=true;
+        state.error=null
+      })
   }
 });
 

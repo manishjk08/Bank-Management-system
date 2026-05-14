@@ -22,7 +22,7 @@ const handleLogout=()=>{
       </div>
 
       
-      <div className="flex spacblack">
+      <div className="flex items-center space-x-2">
         <Link to="/dashboard" className="px-4 py-2 text-black  hover:text-[#8A7650] rounded-md transition">
           Dashboard
         </Link>
@@ -32,10 +32,15 @@ const handleLogout=()=>{
         <Link to="/transfer" className="px-4 py-2 text-black  hover:text-[#8A7650] rounded-md transition">
           Transfer
         </Link>
-        <Link to="/transaction" className="px-4 py-2 text-black  hover:text-[#8A7650] rounded-md transition">
+        <Link to="/transactions" className="px-4 py-2 text-black  hover:text-[#8A7650] rounded-md transition">
           Transaction
         </Link>
         
+        {user?.role === 'admin' && (
+          <Link to="/admin" className="px-4 py-2 text-indigo-700 font-semibold hover:text-indigo-900 rounded-md transition">
+            Admin 
+          </Link>
+        )}
         
         <button onClick={handleLogout} className="px-4 py-2 text-black hover:bg-blue-200 rounded-md transition">
           Logout

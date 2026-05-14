@@ -12,7 +12,6 @@ const getAllUser = async (req, res) => {
         res.status(500).json({ error: 'Server error' })
     }
 };
-
 const getAllTransactions = async (req, res) => {
     try {
         const result = await transactionModel.getAll()
@@ -29,6 +28,15 @@ const getAuditlog = async (req, res) => {
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: 'Server error' })
+    }
+}
+const getAllPendingAccounts=async(req,res)=>{
+    try {
+        const result=await accountModel.getAllRequest()
+        res.json({accounts:result})
+    } catch (error) {
+        console.error(error)
+        res.status(500).json({error:"Failed to get allAccounts"})
     }
 }
 const approveAccount = async (req, res) => {
@@ -106,4 +114,4 @@ const approveAccount = async (req, res) => {
 };
   
 
-export { getAllUser, getAllTransactions, getAuditlog, approveAccount, rejectAccount }
+export { getAllUser, getAllTransactions, getAuditlog, approveAccount, rejectAccount,getAllPendingAccounts }

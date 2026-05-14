@@ -10,7 +10,7 @@ const ProtectedRoute = ({ children, adminOnly = false }: Props) => {
   const { user } = useAppSelector((state) => state.auth);
 
   if (!user) return <Navigate to="/login" replace />;
-  if (adminOnly && user.role !== 'admin') return <Navigate to="/dashboard" replace />;
+ if (adminOnly && user.role?.toLowerCase() !== 'admin') return <Navigate to="/dashboard" replace />;
 
   return <>{children}</>;
 };

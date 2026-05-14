@@ -54,6 +54,12 @@ const accountModel = {
         )
         return result.rows[0];
     },
+    getAllRequest:async()=>{
+        const result= await pool.query(
+            `Select * from account_request where status='pending'`
+        )
+        return result.rows;
+    },
     getRequestByIdForUpdate: async (request_id, client) => {
         const result = await client.query(
             `SELECT * FROM account_request WHERE id=$1 FOR UPDATE`,

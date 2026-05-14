@@ -13,6 +13,7 @@ const initialState: AccountState = {
   loading: false,
   error: null,
 };
+type Account_type='savings'|'current'|'fixed_deposit'
 
 export const fetchMyAccounts = createAsyncThunk(
   'accounts/fetchMy',
@@ -25,7 +26,17 @@ export const fetchMyAccounts = createAsyncThunk(
     }
   }
 );
-
+export const createNewAccounts=createAsyncThunk(
+  'accounts/create',
+  async(data:{account_type:Account_type},{rejectWithValue})=>{
+    try {
+      const res=await api.post('/accounts/create',data)
+      return res.data
+    } catch (error:any) {
+      return rejectWithValue(error.response?.data?.error || 'Failed to create an acount')
+    }
+  }
+)
 const accountSlice = createSlice({
   name: 'accounts',
   initialState,

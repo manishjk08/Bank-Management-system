@@ -1,132 +1,137 @@
-import { useState, useEffect } from 'react';
-import { useAppDispatch, useAppSelector } from '../store/hook';
-import { makeTransfer, clearTransferStatus } from '../store/slices/transactionSlice';
-import { fetchMyAccounts } from '../store/slices/accountSlice';
+import { useAppDispatch, useAppSelector } from "../store/hook"
+import { useForm, type SubmitHandler } from "react-hook-form"
+import { useNavigate } from "react-router-dom"
+import { makeTransfer } from "../store/slices/transactionSlice"
+import { fetchMyAccounts } from "../store/slices/accountSlice"
+import { useEffect } from "react"
+import toast from "react-hot-toast"
+
+interface Inputs{
+  from_account_id:number
+  to_account_number:string,
+  amount:number,
+  description:string,
+}
 
 const Transfer = () => {
-  const dispatch = useAppDispatch();
-  const { accounts } = useAppSelector((state) => state.accounts);
-  const { loading, error, transferSuccess } = useAppSelector((state) => state.transactions);
+const {loading,error}=useAppSelector((state)=>state.transactions)
+const {accounts}=useAppSelector((state)=>state.accounts)
+const navigate=useNavigate()
+const dispatch=useAppDispatch()
 
-  const [form, setForm] = useState({
-    from_account_id: '',
-    to_account_number: '',
-    amount: '',
-    description: '',
-  });
 
-  useEffect(() => {
-    dispatch(fetchMyAccounts());
-    return () => { dispatch(clearTransferStatus()); };
-  }, []);
+const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<Inputs>()
 
-  useEffect(() => {
-    if (transferSuccess) {
-      dispatch(fetchMyAccounts());
-      setForm({ from_account_id: '', to_account_number: '', amount: '', description: '' });
+  useEffect(()=>{
+    dispatch(fetchMyAccounts())
+  },[])
+  
+  const onSubmit: SubmitHandler<Inputs> = async(data)=>{
+    try {
+      dispatch(makeTransfer({
+        from_account_id:data.from_account_id,
+        to_account_number:data.to_account_number,
+        amount:data.amount,
+        description:data.description
+      }))
+      toast.success('Transfer completed')
+      navigate('/transactions')
+    } catch (error) {
+      console.log('Transfer failed ',error)
     }
-  }, [transferSuccess]);
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    dispatch(makeTransfer({
-      from_account_id: parseInt(form.from_account_id),
-      to_account_number: form.to_account_number,
-      amount: parseFloat(form.amount),
-      description: form.description || undefined,
-    }));
-  };
-
-  const selectedAccount = accounts.find(a => a.id === parseInt(form.from_account_id));
-
+  }
+  
+ 
   return (
-    <div className="max-w-lg space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">Transfer Funds</h1>
-        <p className="text-slate-400 text-sm mt-1">Send money to another account</p>
-      </div>
+    <div>
+      <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded-lg shadow-md">
+  <h2 className="text-2xl font-bold mb-6 text-center text-gray-800">Send Money</h2>
+  
+  {error && <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-md text-sm">{error}</div>}
+  
+  <form onSubmit={handleSubmit(onSubmit)}>
+    
+<div className="mb-4">
+  <select
+    
+    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+    {...register("from_account_id", {
+      required: "Account is required",
+    })}
+  >
+    <option value="">Choose your account</option>
 
-      {error && (
-        <div className="bg-red-500/10 border border-red-500 text-red-400 px-4 py-3 rounded-lg text-sm">
-          {error}
-        </div>
-      )}
-      {transferSuccess && (
-        <div className="bg-green-500/10 border border-green-500 text-green-400 px-4 py-3 rounded-lg text-sm">
-          ✅ Transfer completed successfully!
-        </div>
-      )}
+    {accounts.map((account) => (
+      <option key={account.id} value={account.id}>
+        {account.account_number}
+      </option>
+    ))}
+  </select>
 
-      <form onSubmit={handleSubmit} className="bg-slate-900 border border-slate-800 rounded-xl p-6 space-y-4">
-        <div>
-          <label className="block text-sm text-slate-400 mb-1">From Account</label>
-          <select
-            value={form.from_account_id}
-            onChange={(e) => setForm({ ...form, from_account_id: e.target.value })}
-            className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500"
-            required
-          >
-            <option value="">Select account</option>
-            {accounts.map((acc) => (
-              <option key={acc.id} value={acc.id}>
-                {acc.account_number} — ${parseFloat(acc.balance.toString()).toFixed(2)}
-              </option>
-            ))}
-          </select>
-          {selectedAccount && (
-            <p className="text-xs text-slate-500 mt-1">
-              Available: <span className="text-green-400">${parseFloat(selectedAccount.balance.toString()).toFixed(2)}</span>
-            </p>
-          )}
-        </div>
+  {errors.from_account_id && (
+    <span className="text-red-500 text-sm mt-1 block">
+      {errors.from_account_id.message}
+    </span>
+  )}
+</div>
 
-        <div>
-          <label className="block text-sm text-slate-400 mb-1">To Account Number</label>
-          <input
-            type="text"
-            value={form.to_account_number}
-            onChange={(e) => setForm({ ...form, to_account_number: e.target.value })}
-            className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500 font-mono"
-            placeholder="ACC1234567890"
-            required
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm text-slate-400 mb-1">Amount (USD)</label>
-          <input
-            type="number"
-            value={form.amount}
-            onChange={(e) => setForm({ ...form, amount: e.target.value })}
-            className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500"
-            placeholder="0.00"
-            min="0.01"
-            step="0.01"
-            required
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm text-slate-400 mb-1">Description <span className="text-slate-600">(optional)</span></label>
-          <input
-            type="text"
-            value={form.description}
-            onChange={(e) => setForm({ ...form, description: e.target.value })}
-            className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500"
-            placeholder="Rent, invoice #123, etc."
-          />
-        </div>
-
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-50 py-2 rounded-lg font-semibold transition"
-        >
-          {loading ? 'Processing...' : 'Send Transfer'}
-        </button>
-      </form>
+    <div className="mb-4">
+      <input
+        type="text"
+        placeholder="Write account number you want to send money"
+        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        {...register("to_account_number", { 
+          required: "Account number is required",
+          
+        })}
+      />
+      {errors.to_account_number && <span className="text-red-500 text-sm mt-1 block">{errors.to_account_number.message}</span>}
     </div>
-  );
-};
 
-export default Transfer;
+    <div className="mb-6">
+      <input
+  type="number"
+  placeholder="Amount"
+  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+  {...register("amount", {
+    required: "Amount is required",
+    valueAsNumber: true,
+    min: {
+      value: 1,
+      message: "Amount must be a positive number",
+    },
+  })}
+/>
+      {errors.amount && <span className="text-red-500 text-sm mt-1 block">{errors.amount.message}</span>}
+    </div>
+    <div className="mb-6">
+      <input
+        type="text"
+        placeholder="Description"
+        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        {...register("description", { 
+          required: "Description is required",
+          
+        })}
+      />
+      {errors.description && <span className="text-red-500 text-sm mt-1 block">{errors.description.message}</span>}
+    </div>
+
+    <button 
+      type="submit" 
+      disabled={loading}
+      className="w-full bg-blue-500 text-white py-2 rounded-md hover:bg-blue-600 transition-colors disabled:bg-blue-300 disabled:cursor-not-allowed"
+    >
+      {loading ? "Sending..." : "Transfer"}
+    </button>
+  </form>
+</div>
+    </div>
+  )
+}
+
+export default Transfer

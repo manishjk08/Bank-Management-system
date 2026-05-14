@@ -8,7 +8,7 @@ export interface User {
 export interface Account {
   id: number;
   account_number: string;
-  account_type: 'savings' | 'checking';
+  account_type: 'savings' | 'current'|'fixed-deposit';
   balance: number;
   currency: string;
   created_at: string;
@@ -21,8 +21,8 @@ export interface Transaction {
   transaction_type: 'transfer' | 'deposit' | 'withdrawal';
   status: 'pending' | 'completed' | 'failed';
   description: string | null;
-  from_account_id: string | null;
-  to_account_id: string | null;
+  from_account: string | null;
+  to_account: string | null;
   created_at: string;
 }
 
@@ -32,8 +32,9 @@ export interface FxRate {
   rate: number;
   timestamp: string;
 }
-
-export interface AdminAccount extends Account {
-  full_name: string;
-  email: string;
-}
+ export interface PendingAccount{
+  id:number,
+  user_id:number,
+  status:'pending'|'completed'|'failed',
+  account_type:'savings' | 'current'|'fixed-deposit';
+ }

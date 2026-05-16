@@ -63,42 +63,67 @@ const options=useMemo(()=>({
 
 ),[])
  
-  return (
-<>
-  <div>
-  <h5 className="text-lg font-bold mb-4">Your Accounts</h5>
-  <div className="flex flex-row gap-6 flex-wrap">
-    {accounts.map((a) => (
-      <div
-        key={a.account_number}
-        className="w-64 h-36 rounded-xl shadow-lg bg-linear-to-r from-blue-400 to-indigo-600 text-white p-4 flex flex-col justify-between"
-      >
-        <div className="flex justify-between items-center">
-          <p className="text-sm font-semibold">Account</p>
-          <p className="text-xs">{a.account_type}</p>
-        </div>
-        <div>
-          <p className="tracking-widest text-lg font-bold">{a.account_number}</p>
-        </div>
-        <div className="flex justify-between items-center">
-          <p className="text-sm">Balance</p>
-          <p className="text-lg font-semibold">$ {a.balance}</p>
-        </div>
-      </div>
-    ))}
-  </div>
-</div>
 
-{loading ? (
-  <p>Data is fetching...</p>
-):
-<div className="w-75 border-2 mt-4">
-    <Pie data={data} options={options} />
+  const accountNumbers = accounts.map(a => a.account_number);
+  return (
+    <div className="space-y-8">
+      <div>
+        <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Dashboard Overview</h1>
+        <p className="text-gray-500 text-sm mt-1">Welcome back, here's your financial summary.</p>
+      </div>
+
+    <div className="flex gap-6">
+
+  <div className="flex-1 bg-white rounded-lg p-6 shadow-sm border border-gray-100">
+    <p className="text-gray-500 text-sm">Total Balance</p>
+    <p className="text-2xl font-semibold mt-2">
+      ${accounts.reduce((a, c) => a + Number(c.balance), 0).toFixed(2)}
+    </p>
   </div>
-}
-  
-</>
+
+  <div className="flex-1 bg-white rounded-lg p-6 shadow-sm border border-gray-100">
+    <p className="text-gray-500 text-sm">Income</p>
+    <p className="text-2xl font-semibold mt-2 text-green-600">
+      ${transactions
+        .filter(t => t.transaction_type === "deposit")
+        .reduce((a, c) => a + Number(c.amount), 0)
+        .toFixed(2)}
+    </p>
+  </div>
+
+  <div className="flex-1 bg-white rounded-lg p-6 shadow-sm border border-gray-100">
+    <p className="text-gray-500 text-sm">Expenses</p>
+    <p className="text-2xl font-semibold mt-2 text-red-500">
+      ${transactions
+        .filter(t =>
+          t.transaction_type === "transfer" &&
+          t.to_account &&
+          !accountNumbers.includes(t.to_account)
+        )
+        .reduce((a, c) => a + Number(c.amount), 0)
+        .toFixed(2)}
+    </p>
+  </div>
+
+</div>
+     
+     
+
+      <div className="space-y-4">
+        <h5 className="text-lg font-semibold text-gray-800 px-1">Transaction Analytics</h5>
+        {loading ? (
+          <div className="flex justify-center p-12 bg-white rounded-2xl border border-gray-100 shadow-sm w-full md:w-1/2 lg:w-1/3">
+            <p className="text-gray-500 animate-pulse font-medium">Loading analytics...</p>
+          </div>
+        ) : (
+          <div className="w-full md:w-1/2 lg:w-1/3 bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex items-center justify-center">
+            <Pie data={data} options={options} />
+          </div>
+        )}
+      </div>
+    </div>
   );
+  
 };
 
 export default Dashboard;

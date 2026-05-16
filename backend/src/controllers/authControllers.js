@@ -65,11 +65,11 @@ const login = async (req, res) => {
     // Sign JWT
     const accessToken = generateAccessToken(user);
     const refreshToken = generateRefreshToken(user);
-
+  
     const refreshExpiry = new Date();
     refreshExpiry.setDate(refreshExpiry.getDate() + 7);
         
-
+    await refreshTokenModel.revokeTokenByUser(user.id);
     await refreshTokenModel.storeToken(user.id, refreshToken,refreshExpiry,false);
 
     res.cookie("refreshToken",refreshToken,refreshCookieOptions);

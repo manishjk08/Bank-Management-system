@@ -14,7 +14,9 @@ import Transactions from "./pages/Transactions";
 import Transfer from "./pages/Transfer";
 import Admin from "./pages/Admin";
 import Layout from "./components/Layout";
-
+import { useEffect } from "react";
+import { refreshToken } from "./store/slices/authSlice";
+import { useAppDispatch } from "./store/hook";
 
 
 const router = createBrowserRouter([
@@ -73,6 +75,17 @@ const router = createBrowserRouter([
   },
 ]);
 
-const App = () => <RouterProvider router={router} />;
+const App = () => {
+  const dispatch = useAppDispatch();
+
+  useEffect(() => {
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) {
+      dispatch(refreshToken());
+    }
+  }, [dispatch]);
+
+  return <RouterProvider router={router} />;
+};
 
 export default App;

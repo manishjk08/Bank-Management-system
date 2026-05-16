@@ -46,7 +46,7 @@ export const makeDeposit = createAsyncThunk(
     }
   }
 );
-export const PendingAccounts=createAsyncThunk(
+export const PendingAccountRequest=createAsyncThunk(
   'admin/pending_request',
   async(_,{rejectWithValue})=>{
     try {
@@ -59,20 +59,30 @@ export const PendingAccounts=createAsyncThunk(
 )
 
 export const ApproveAccounts=createAsyncThunk(
-  'admin/approve',
+  'admin/approve/id',
   async (
     data:{
-      request_id:string,
-    approve:string;
+      id:number,
   },{rejectWithValue})=>{
     try {
-      const res=await api.post(`/approve/${data.request_id}`)
+      const res=await api.patch(`accounts/approve/${data.id}`)
       return res.data
     } catch (error) {
       return rejectWithValue(error||'Approved failed')
     }
   }
 );
+export const rejectAccounts=createAsyncThunk(
+  'accounts/reject/id',
+  async(data:{id:number},{rejectWithValue})=>{
+    try {
+      const res=await api.patch(`accounts/reject/${data.id}`)
+      return res.data
+    } catch (error) {
+      return rejectWithValue(error||'Reject failed')
+    }
+  }
+)
 
 const adminSlice = createSlice({
   name: 'admin',
@@ -110,17 +120,49 @@ const adminSlice = createSlice({
         state.loading = false;
         state.error = action.payload as string;
       })
-      .addCase(PendingAccounts.pending,(state)=>{
+      .addCase(PendingAccountRequest.pending,(state)=>{
         state.loading=true;
         state.error=null
       })
-       .addCase(PendingAccounts.fulfilled,(state,action)=>{
+       .addCase(PendingAccountRequest.fulfilled,(state,action)=>{
         state.loading=true;
         state.error=null;
         state.pendingAccounts=action.payload
       })
-       .addCase(PendingAccounts.rejected,(state)=>{
+       .addCase(PendingAccountRequest.rejected,(state)=>{
         state.loading=true;
+        state.error=null
+      })
+      .addCase(ApproveAccounts.pending,(state)=>{
+        state.loading=true;
+        state.error=null
+      })
+       .addCase(ApproveAccounts.fulfilled,(state,action)=>{
+        state.loading=false;
+        state.error=null;
+         state.pendingAccounts = state.pendingAccounts.filter(
+    (acc) => acc.id !== action.payload.id);
+    state.allAccounts.push(action.payload);
+        
+      })
+       .addCase(ApproveAccounts.rejected,(state)=>{
+        state.loading=false;
+        state.error=null
+      })
+      .addCase(rejectAccounts.pending,(state)=>{
+        state.loading=true;
+        state.error=null
+      })
+       .addCase(rejectAccounts.fulfilled,(state,action)=>{
+        state.loading=false;
+        state.error=null;
+         state.pendingAccounts = state.pendingAccounts.filter(
+    (acc) => acc.id !== action.payload.id);
+    
+        
+      })
+       .addCase(rejectAccounts.rejected,(state)=>{
+        state.loading=false;
         state.error=null
       })
   }

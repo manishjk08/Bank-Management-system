@@ -46,90 +46,90 @@ const {
   }
   
  
+  
   return (
-    <div>
-      <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded-lg shadow-md">
-  <h2 className="text-2xl font-bold mb-6 text-center text-gray-800">Send Money</h2>
-  
-  {error && <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-md text-sm">{error}</div>}
-  
-  <form onSubmit={handleSubmit(onSubmit)}>
-    
-<div className="mb-4">
-  <select
-    
-    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-    {...register("from_account_id", {
-      required: "Account is required",
-    })}
-  >
-    <option value="">Choose your account</option>
+    <div className="min-h-[80vh] flex items-center justify-center">
+      <div className="w-full max-w-lg bg-white p-8 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100">
+        <div className="mb-8 text-center">
+          <div className="w-16 h-16 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+            </svg>
+          </div>
+          <h2 className="text-3xl font-extrabold text-gray-900 tracking-tight">Send Money</h2>
+          <p className="text-gray-500 mt-2 text-sm">Transfer funds instantly and securely</p>
+        </div>
+        
+        {error && <div className="mb-6 p-4 bg-red-50 text-red-600 rounded-xl text-sm border border-red-100 flex items-center">{error}</div>}
+        
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">From Account</label>
+            <select
+              className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 focus:bg-white transition-all duration-200"
+              {...register("from_account_id", { required: "Account is required" })}
+            >
+              <option value="">Choose your account</option>
+              {accounts.map((account) => (
+                <option key={account.id} value={account.id}>
+                  {account.account_type} - {account.account_number} (${account.balance})
+                </option>
+              ))}
+            </select>
+            {errors.from_account_id && <span className="text-red-500 text-sm mt-1.5 block">{errors.from_account_id.message}</span>}
+          </div>
 
-    {accounts.map((account) => (
-      <option key={account.id} value={account.id}>
-        {account.account_number}
-      </option>
-    ))}
-  </select>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Recipient Account Number</label>
+            <input
+              type="text"
+              placeholder="e.g. 1234567890"
+              className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 focus:bg-white transition-all duration-200 font-mono"
+              {...register("to_account_number", { required: "Account number is required" })}
+            />
+            {errors.to_account_number && <span className="text-red-500 text-sm mt-1.5 block">{errors.to_account_number.message}</span>}
+          </div>
 
-  {errors.from_account_id && (
-    <span className="text-red-500 text-sm mt-1 block">
-      {errors.from_account_id.message}
-    </span>
-  )}
-</div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Amount ($)</label>
+            <input
+              type="number"
+              placeholder="0.00"
+              className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 focus:bg-white transition-all duration-200 font-semibold text-lg"
+              {...register("amount", {
+                required: "Amount is required",
+                valueAsNumber: true,
+                min: { value: 1, message: "Amount must be a positive number" },
+              })}
+            />
+            {errors.amount && <span className="text-red-500 text-sm mt-1.5 block">{errors.amount.message}</span>}
+          </div>
 
-    <div className="mb-4">
-      <input
-        type="text"
-        placeholder="Write account number you want to send money"
-        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-        {...register("to_account_number", { 
-          required: "Account number is required",
-          
-        })}
-      />
-      {errors.to_account_number && <span className="text-red-500 text-sm mt-1 block">{errors.to_account_number.message}</span>}
-    </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Description (Optional)</label>
+            <input
+              type="text"
+              placeholder="What's this transfer for?"
+              className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 focus:bg-white transition-all duration-200"
+              {...register("description", { required: "Description is required" })}
+            />
+            {errors.description && <span className="text-red-500 text-sm mt-1.5 block">{errors.description.message}</span>}
+          </div>
 
-    <div className="mb-6">
-      <input
-  type="number"
-  placeholder="Amount"
-  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-  {...register("amount", {
-    required: "Amount is required",
-    valueAsNumber: true,
-    min: {
-      value: 1,
-      message: "Amount must be a positive number",
-    },
-  })}
-/>
-      {errors.amount && <span className="text-red-500 text-sm mt-1 block">{errors.amount.message}</span>}
-    </div>
-    <div className="mb-6">
-      <input
-        type="text"
-        placeholder="Description"
-        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-        {...register("description", { 
-          required: "Description is required",
-          
-        })}
-      />
-      {errors.description && <span className="text-red-500 text-sm mt-1 block">{errors.description.message}</span>}
-    </div>
-
-    <button 
-      type="submit" 
-      disabled={loading}
-      className="w-full bg-blue-500 text-white py-2 rounded-md hover:bg-blue-600 transition-colors disabled:bg-blue-300 disabled:cursor-not-allowed"
-    >
-      {loading ? "Sending..." : "Transfer"}
-    </button>
-  </form>
-</div>
+          <button 
+            type="submit" 
+            disabled={loading}
+            className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-3 rounded-xl hover:from-blue-700 hover:to-indigo-700 shadow-lg shadow-blue-500/30 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed font-semibold mt-6 flex justify-center items-center gap-2"
+          >
+            {loading ? (
+              <>
+                <svg className="animate-spin h-5 w-5 text-white" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                Processing...
+              </>
+            ) : "Send Money Now"}
+          </button>
+        </form>
+      </div>
     </div>
   )
 }

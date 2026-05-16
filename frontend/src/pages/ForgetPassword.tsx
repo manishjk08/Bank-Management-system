@@ -28,42 +28,45 @@ const onSubmit:SubmitHandler<Inputs>=async(data)=>{
 
 
   return (
-    <div className="flex items-center justify-center min-h-screen">
-  <form
-    onSubmit={handleSubmit(onSubmit)}
-    className="bg-white shadow-md rounded-lg p-6 w-full max-w-sm"
-  >
-    <h2 className="text-2xl font-semibold text-gray-800 mb-4">Forget Password</h2>
+    <div className="min-h-[80vh] flex items-center justify-center">
+      <div className="w-full max-w-md bg-white p-8 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100">
+        <div className="mb-8 text-center">
+          <h2 className="text-3xl font-extrabold text-gray-900 tracking-tight">Forgot Password</h2>
+          <p className="text-gray-500 mt-2 text-sm">Enter your email to receive a reset link</p>
+        </div>
 
-    <div className="mb-4">
-      <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-        Email
-      </label>
-      <input
-        {...register("email", { required: "Email is required" })}
-        id="email"
-        placeholder="Enter your email"
-        type="email"
-        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md 
-                   shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 
-                   focus:border-blue-500 sm:text-sm"
-      />
-      {errors.email && (
-        <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>
-      )}
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+          <div>
+            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+              Email Address
+            </label>
+            <input
+              {...register("email", { required: "Email is required" })}
+              id="email"
+              placeholder="name@example.com"
+              type="email"
+              className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 focus:bg-white transition-all duration-200"
+            />
+            {errors.email && (
+              <p className="mt-1.5 text-sm text-red-500">{errors.email.message}</p>
+            )}
+          </div>
+
+          <button
+            type="submit"
+            className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-3 rounded-xl hover:from-blue-700 hover:to-indigo-700 shadow-lg shadow-blue-500/30 transition-all duration-200 font-semibold mt-6"
+          >
+            Send Reset Link
+          </button>
+        </form>
+        
+        <div className="mt-8 text-center">
+          <button onClick={() => navigate('/login')} className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors">
+            &larr; Back to Login
+          </button>
+        </div>
+      </div>
     </div>
-
-    <button
-      type="submit"
-      className="w-full bg-blue-600 text-white py-2 px-4 rounded-md 
-                 hover:bg-blue-700 focus:outline-none focus:ring-2 
-                 focus:ring-blue-500 focus:ring-offset-1"
-    >
-      Submit
-    </button>
-  </form>
-
-</div>
 
   )
 }

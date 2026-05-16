@@ -3,7 +3,6 @@ import api from '../../services/api';
 import type { User } from '../../types';
 
 const storedUser = localStorage.getItem("user");
-const storedToken = localStorage.getItem("accessToken")
 
 interface AuthState {
   user:User | null;
@@ -15,10 +14,10 @@ interface AuthState {
 
 const initialState:AuthState={
   user:storedUser?JSON.parse(storedUser):null,
-  accessToken:storedToken,
+  accessToken:null,
   loading:false,
   error:null,
-  isAuthenticated: !!storedToken
+  isAuthenticated: false
 }
 
 export const registerUser=createAsyncThunk(
@@ -54,6 +53,21 @@ export const logout=createAsyncThunk(
     }
   }
 )
+export const refreshToken = createAsyncThunk(
+  "auth/refresh",
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await api.post("/auth/refresh-token",{});
+      
+      return response.data;
+
+    } catch (error: any) {
+      return rejectWithValue(
+        error.response?.data?.message || "Refresh failed"
+      );
+    }
+  }
+);
 const authSlice =createSlice({
   name:"auth",
   initialState,
@@ -62,6 +76,10 @@ const authSlice =createSlice({
       state.error=null;
      
     },
+     setCredentials: (state, action) => {
+    state.accessToken = action.payload.accessToken;
+    state.isAuthenticated = true;
+  },
   },
   extraReducers:(builder)=>{
     builder
@@ -116,10 +134,19 @@ const authSlice =createSlice({
       state.loading=false;
       state.error=action.payload as string;
       
-    
+   //refresh token 
   })
+  .addCase(refreshToken.fulfilled, (state, action) => {
+  state.accessToken = action.payload.accessToken;
+  state.isAuthenticated = true;
+})
+.addCase(refreshToken.rejected, (state) => {
+  state.isAuthenticated = false;
+  state.user = null;
+  state.accessToken = null;
+})
   }
 })
 
-export const {  clearError } = authSlice.actions;
+export const {  clearError,setCredentials } = authSlice.actions;
 export default authSlice.reducer;

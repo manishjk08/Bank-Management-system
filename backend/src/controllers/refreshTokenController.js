@@ -1,5 +1,6 @@
 import jwt, { decode } from 'jsonwebtoken';
 import refreshTokenModel from '../models/RefreshTokenModel.js';
+import userModel from '../models/userModels.js';
 import { verifyRefreshToken } from '../utils/GenerateToken.js';
 import { generateAccessToken } from '../utils/GenerateToken.js';
 
@@ -10,16 +11,23 @@ try {
     if(!refreshToken){
         return res.status(401).json({error:'Refresh token missing'})
     }
+    
+     const decoded= verifyRefreshToken(refreshToken)
     const storedToken=await refreshTokenModel.findByToken(refreshToken)
     if(!storedToken){
         return res.status(401).json({error:"Invalid refresh token"})
     }
-    const decoded=await verifyRefreshToken(refreshToken)
-    const accessToken= await generateAccessToken(
+   
+    const user = await userModel.findById(decoded.id);
+    if(!user){
+        return res.status(401).json({error: "User not found"});
+    }
+
+    const accessToken= generateAccessToken(
         {
-            id:decoded.id,
-            email:decoded.email,
-            role:decoded.role
+            id:user.id,
+            email:user.email,
+            role:user.role
         }
     )
     res.json({accessToken:accessToken})

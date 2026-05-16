@@ -1,36 +1,74 @@
+
 import axios from "axios";
+import { setCredentials, logout } from "../store/slices/authSlice";
+import { store } from "../store";
 
+let isRefreshing = false;
+let refreshPromise: Promise<string> | null = null;
 
+const api = axios.create({
+  baseURL: "http://localhost:5000/api/",
+  withCredentials: true,
+});
 
-
-const api=axios.create({
-  baseURL: "http://localhost:5000/api/"
-})
-
-
+// Request interceptor
 api.interceptors.request.use(
-  (config)=>{
-  const accessToken=localStorage.getItem("accessToken");
-  if(accessToken) {
-    config.headers.authorization=`Bearer ${accessToken}`;
-  }
-  return config;
-},
-(error)=>{
-  return Promise.reject(error);
-}
-)
+  (config) => {
+    const accessToken = store.getState().auth.accessToken;
+    if (accessToken) {
+      config.headers.Authorization = `Bearer ${accessToken}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
 
-
+// Response interceptor
 api.interceptors.response.use(
-  (response)=>response,
- (error)=>{
-   if(error.response?.status===401) {
-     localStorage.removeItem("accessToken");
-     localStorage.removeItem("user");
-     
-   }
-   return Promise.reject(error);
- }
-)
+  (res) => res,
+  async (error) => {
+    const originalRequest = error.config;
+
+    if (
+      error.response?.status === 401 &&
+      !originalRequest._retry &&
+      originalRequest.url !== "/auth/refresh-token"
+    ) {
+      originalRequest._retry = true;
+
+      try {
+        if (!refreshPromise) {
+          isRefreshing = true;
+
+          refreshPromise = api
+            .post("/auth/refresh-token")
+            .then((res) => {
+              const token = res.data.accessToken;
+
+              store.dispatch(setCredentials({ accessToken: token }));
+
+              return token;
+            })
+            .finally(() => {
+              isRefreshing = false;
+              refreshPromise = null;
+            });
+        }
+
+        const newToken = await refreshPromise;
+
+        originalRequest.headers.Authorization = `Bearer ${newToken}`;
+
+        return api(originalRequest);
+      } catch (err) {
+        store.dispatch(logout());
+        window.location.href = "/login";
+        return Promise.reject(err);
+      }
+    }
+
+    return Promise.reject(error);
+  }
+);
+
 export default api;

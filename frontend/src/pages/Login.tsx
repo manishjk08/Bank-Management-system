@@ -43,62 +43,67 @@ const Login=()=>{
 
     return(
       
-        <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded-lg shadow-md">
-  <h2 className="text-2xl font-bold mb-6 text-center text-gray-800">Login</h2>
-  
-  {error && <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-md text-sm">{error}</div>}
-  
-  <form onSubmit={handleSubmit(onSubmit)}>
-   
+        <div className="min-h-[80vh] flex items-center justify-center">
+          <div className="w-full max-w-md bg-white p-8 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100">
+            <div className="mb-8 text-center">
+              <h2 className="text-3xl font-extrabold text-gray-900 tracking-tight">Welcome Back</h2>
+              <p className="text-gray-500 mt-2 text-sm">Sign in to your account</p>
+            </div>
+            
+            {error && <div className="mb-6 p-4 bg-red-50 text-red-600 rounded-xl text-sm border border-red-100 flex items-center">{error}</div>}
+            
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
+                <input
+                  type="email"
+                  placeholder="name@example.com"
+                  className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 focus:bg-white transition-all duration-200"
+                  {...register("email", { 
+                    required: "Email is required",
+                    pattern: {
+                      value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                      message: "Invalid email address"
+                    }
+                  })}
+                />
+                {errors.email && <span className="text-red-500 text-sm mt-1.5 block">{errors.email.message}</span>}
+              </div>
 
-    <div className="mb-4">
-      <input
-        type="email"
-        placeholder="Email"
-        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-        {...register("email", { 
-          required: "Email is required",
-          pattern: {
-            value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-            message: "Invalid email address"
-          }
-        })}
-      />
-      {errors.email && <span className="text-red-500 text-sm mt-1 block">{errors.email.message}</span>}
-    </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                <input
+                  type="password"
+                  placeholder="••••••••"
+                  className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 focus:bg-white transition-all duration-200"
+                  {...register("password", { 
+                    required: "Password is required",
+                    minLength: {
+                      value: 2,
+                      message: "Password must be at least 6 characters"
+                    }
+                  })}
+                />
+                {errors.password && <span className="text-red-500 text-sm mt-1.5 block">{errors.password.message}</span>}
+                <div className="flex justify-end mt-2">
+                  <Link to="/forget-password" className="text-sm font-medium text-blue-600 hover:text-blue-700 hover:underline">Forgot password?</Link>
+                </div>
+              </div>
 
-    <div className="mb-6">
-      <input
-        type="password"
-        placeholder="Password"
-        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-        {...register("password", { 
-          required: "Password is required",
-          minLength: {
-            value: 2,
-            message: "Password must be at least 6 characters"
-          }
-        })}
-      />
-      {errors.password && <span className="text-red-500 text-sm mt-1 block">{errors.password.message}</span>}
-    </div>
-
-    <button 
-      type="submit" 
-      disabled={loading}
-      className="w-full bg-blue-500 text-white py-2 rounded-md hover:bg-blue-600 transition-colors disabled:bg-blue-300 disabled:cursor-not-allowed"
-    >
-      {loading ? "Loging..." : "Login"}
-    </button>
-  </form>
- <p className="mt-4 text-center text-gray-600">
-    Dont have account? <Link to="/register" className="text-blue-500 hover:text-blue-600">Register here</Link>
-  </p>
-  
-  <p className="mt-4 text-center text-gray-600">
-    Forget Password? <Link to="/forget-password" className="text-blue-500 hover:text-blue-600">Reset here</Link>
-  </p>
-</div>
+              <button 
+                type="submit" 
+                disabled={loading}
+                className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-3 rounded-xl hover:from-blue-700 hover:to-indigo-700 shadow-lg shadow-blue-500/30 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed font-semibold mt-6"
+              >
+                {loading ? "Signing in..." : "Sign In"}
+              </button>
+            </form>
+            
+            <p className="mt-8 text-center text-sm text-gray-600">
+              Don't have an account? <Link to="/register" className="font-semibold text-blue-600 hover:text-blue-700 hover:underline">Register here</Link>
+            </p>
+          </div>
+        </div>
       
     )
 }

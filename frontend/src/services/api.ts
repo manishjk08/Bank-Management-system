@@ -3,7 +3,7 @@ import axios from "axios";
 import { setCredentials, logout } from "../store/slices/authSlice";
 import { store } from "../store";
 
-let isRefreshing = false;
+
 let refreshPromise: Promise<string> | null = null;
 
 const api = axios.create({
@@ -38,8 +38,7 @@ api.interceptors.response.use(
 
       try {
         if (!refreshPromise) {
-          isRefreshing = true;
-
+          
           refreshPromise = api
             .post("/auth/refresh-token")
             .then((res) => {
@@ -50,7 +49,7 @@ api.interceptors.response.use(
               return token;
             })
             .finally(() => {
-              isRefreshing = false;
+              
               refreshPromise = null;
             });
         }

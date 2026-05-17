@@ -7,7 +7,7 @@ import { store } from "../store";
 let refreshPromise: Promise<string> | null = null;
 
 const api = axios.create({
-  baseURL: "https://bank-management-system-2-cchz.onrender.com/api",
+  baseURL: "https://bank-management-system-4-d2qx.onrender.com/api",
   withCredentials: true,
 });
 

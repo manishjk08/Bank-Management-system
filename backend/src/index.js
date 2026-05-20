@@ -30,7 +30,6 @@ app.use(morgan('dev'));
 app.use(express.json());
 app.use(cookieParser());
 
-// Rate limiting , 100 requests per 15 minutes per IP
 
 
 // Routes
@@ -50,3 +49,4 @@ app.get('/', (req, res) => {
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });
+

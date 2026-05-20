@@ -1,4 +1,4 @@
-import jwt, { decode } from 'jsonwebtoken';
+import jwt from 'jsonwebtoken';
 import refreshTokenModel from '../models/RefreshTokenModel.js';
 import userModel from '../models/userModels.js';
 import { verifyRefreshToken } from '../utils/GenerateToken.js';
@@ -6,13 +6,15 @@ import { generateAccessToken } from '../utils/GenerateToken.js';
 
 
 const accessRefreshToken=async (req,res)=>{
+   
 try {
+    
     const refreshToken=req.cookies.refreshToken
     if(!refreshToken){
         return res.status(401).json({error:'Refresh token missing'})
     }
     
-     const decoded= verifyRefreshToken(refreshToken)
+    const decoded= verifyRefreshToken(refreshToken)
     const storedToken=await refreshTokenModel.findByToken(refreshToken)
     if(!storedToken){
         return res.status(401).json({error:"Invalid refresh token"})

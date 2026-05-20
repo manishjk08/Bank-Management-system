@@ -1,6 +1,9 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import api from '../../services/api';
 import type { Transaction } from '../../types';
+import toast from 'react-hot-toast';
+
+
 
 interface TransactionState {
   transactions: Transaction[];
@@ -35,8 +38,11 @@ export const makeTransfer = createAsyncThunk(
     { rejectWithValue }
   ) => {
     try {
+      
       const res = await api.post('/transactions/transfer', data);
+      
       return res.data;
+      
     } catch (err: any) {
       return rejectWithValue(err.response?.data?.error || 'Transfer failed.');
     }
@@ -74,10 +80,13 @@ const transactionSlice = createSlice({
       .addCase(makeTransfer.fulfilled, (state) => {
         state.loading = false;
         state.transferSuccess = true;
+        
+        
       })
       .addCase(makeTransfer.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
+        
       });
   }
 });

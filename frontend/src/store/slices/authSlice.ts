@@ -3,6 +3,7 @@ import api from '../../services/api';
 import type { User } from '../../types';
 
 const storedUser = localStorage.getItem("user");
+const storedToken=localStorage.getItem("accessToken")
 
 interface AuthState {
   user:User | null;
@@ -14,10 +15,10 @@ interface AuthState {
 
 const initialState:AuthState={
   user:storedUser?JSON.parse(storedUser):null,
-  accessToken:null,
+  accessToken:storedToken||null,
   loading:false,
   error:null,
-  isAuthenticated: false
+  isAuthenticated: !! storedToken
 }
 
 export const registerUser=createAsyncThunk(
@@ -27,7 +28,7 @@ export const registerUser=createAsyncThunk(
       const response=await api.post('/auth/register',data);
       return response.data;   
     } catch (error:any) {
-      return rejectWithValue(error.response?.data?.message || 'Registration failed');
+      return rejectWithValue(error.response?.data?.error || 'Registration failed');
     }
 })
 
@@ -38,7 +39,7 @@ export const login =createAsyncThunk(
       const response=await api.post('/auth/login',data);
       return response.data;
     } catch (error:any) {
-      return rejectWithValue(error.response?.data?.message || 'Login failed')
+      return rejectWithValue(error.response?.data?.error || 'Login failed')
     }
   }
 )
@@ -49,7 +50,7 @@ export const logout=createAsyncThunk(
       const response=await api.post('/auth/logout');
       return response.data;
     } catch (error:any) {
-      return rejectWithValue(error.response?.data?.message || 'Logout failed')
+      return rejectWithValue(error.response?.data?.error || 'Logout failed')
     }
   }
 )
@@ -63,7 +64,7 @@ export const refreshToken = createAsyncThunk(
 
     } catch (error: any) {
       return rejectWithValue(
-        error.response?.data?.message || "Refresh failed"
+        error.response?.data?.error || "Refresh failed"
       );
     }
   }
@@ -91,8 +92,7 @@ const authSlice =createSlice({
     .addCase(registerUser.fulfilled,(state,action)=>{
       state.loading=false;
       state.user=action.payload.user;
-      state.accessToken=action.payload.accessToken;
-      state.isAuthenticated=true
+      
     })
     .addCase(registerUser.rejected,(state,action)=>{
       state.loading=false;
@@ -104,15 +104,18 @@ const authSlice =createSlice({
       state.error=null;
       
     })
-    .addCase(login.fulfilled,(state,action)=>{
-      state.loading=false,
-      state.user=action.payload.user;
-      state.accessToken=action.payload.accessToken;
-      localStorage.setItem("accessToken",action.payload.accessToken);
-      localStorage.setItem("user",JSON.stringify(action.payload.user));
-      state.isAuthenticated=true
-
-    })
+    .addCase(login.fulfilled, (state, action) => {
+  state.loading = false;
+  state.user = action.payload.user || null;
+  state.accessToken = action.payload.accessToken;
+  state.isAuthenticated = true;
+  if (action.payload.accessToken) {
+    localStorage.setItem("accessToken", action.payload.accessToken);
+  }
+  if (action.payload.user) {
+    localStorage.setItem("user", JSON.stringify(action.payload.user));
+  }
+})
     .addCase(login.rejected,(state,action)=>{
       state.loading=false;
       state.error=action.payload as string;
@@ -139,11 +142,17 @@ const authSlice =createSlice({
   .addCase(refreshToken.fulfilled, (state, action) => {
   state.accessToken = action.payload.accessToken;
   state.isAuthenticated = true;
+  localStorage.setItem("accessToken", action.payload.accessToken);
+  if (state.user) {
+    localStorage.setItem("user", JSON.stringify(state.user));
+  }
 })
 .addCase(refreshToken.rejected, (state) => {
   state.isAuthenticated = false;
   state.user = null;
   state.accessToken = null;
+   localStorage.removeItem('accessToken');
+  localStorage.removeItem('user');
 })
   }
 })

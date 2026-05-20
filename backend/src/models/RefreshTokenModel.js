@@ -2,16 +2,16 @@ import pool from "../config/db.js";
 
 
 const refreshTokenModel={
-    storeToken:async(user_id,token,expires_at,revoked)=>{
+    storeToken:async(user_id,token,expires_at)=>{
         const result =await pool.query(
-            `INSERT into refresh_tokens (user_id,token,expires_at,revoked) Values ($1,$2,$3,$4) Returning *`,
-            [user_id,token,expires_at,revoked]
+            `INSERT into refresh_tokens (user_id,token,expires_at) Values ($1,$2,$3) Returning *`,
+            [user_id,token,expires_at]
         )
         return result.rows[0];
     },
     findByToken:async(token)=>{
         const result =await pool.query(
-            `Select * from refresh_tokens where token=$1 and revoked=false and expires_at>Now()`,
+            `Select * from refresh_tokens where token=$1 and revoked=false`,
             [token]
         )
         return result.rows[0];
@@ -23,11 +23,6 @@ const refreshTokenModel={
         )
         return result.rows[0];
     },
-    revokeTokenByUser:async(user_id)=>{
-        await pool.query(
-            `UPDATE refresh_tokens set revoked=true where user_id=$1`,
-            [user_id]
-        )
-    }
+   
 }
 export default refreshTokenModel;

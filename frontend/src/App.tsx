@@ -76,15 +76,6 @@ const router = createBrowserRouter([
 ]);
 
 const App = () => {
-  const dispatch = useAppDispatch();
-
-  useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) {
-      dispatch(refreshToken());
-    }
-  }, [dispatch]);
-
   return <RouterProvider router={router} />;
 };
 

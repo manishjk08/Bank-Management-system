@@ -9,7 +9,7 @@ import {refreshCookieOptions} from '../utils/CookieOptions.js';
 
 // POST /api/auth/register
 const register = async (req, res) => {
-  const { full_name, email, password, role } = req.body;
+  const { full_name, email, password, role='customer' } = req.body;
 
   if (!full_name || !email || !password) {
     return res.status(400).json({ error: 'All fields are required.' });
@@ -65,13 +65,11 @@ const login = async (req, res) => {
     // Sign JWT
     const accessToken = generateAccessToken(user);
     const refreshToken = generateRefreshToken(user);
-  
+
     const refreshExpiry = new Date();
     refreshExpiry.setDate(refreshExpiry.getDate() + 7);
-        
-    await refreshTokenModel.revokeTokenByUser(user.id);
-    await refreshTokenModel.storeToken(user.id, refreshToken,refreshExpiry,false);
 
+    await refreshTokenModel.storeToken(user.id,refreshToken,refreshExpiry)
     res.cookie("refreshToken",refreshToken,refreshCookieOptions);
 
     await auditModel.log(user.id, 'User logged in','users',user.id);
@@ -101,8 +99,8 @@ const logout=async(req,res)=>{
 
 if(refreshToken){
   await refreshTokenModel.revokeToken(refreshToken)
-  res.clearCookie("refreshToken",refreshCookieOptions)
   }
+  res.clearCookie("refreshToken",refreshCookieOptions)
 return res.json({message:"Logout successfully"})
   }
   catch(error){

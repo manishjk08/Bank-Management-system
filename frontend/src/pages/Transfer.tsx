@@ -32,16 +32,21 @@ const {
   
   const onSubmit: SubmitHandler<Inputs> = async(data)=>{
     try {
-      dispatch(makeTransfer({
+      const result= await dispatch(makeTransfer({
         from_account_id:data.from_account_id,
         to_account_number:data.to_account_number,
         amount:data.amount,
         description:data.description
       }))
-      toast.success('Transfer completed')
-      navigate('/transactions')
+      if(makeTransfer.fulfilled.match(result)){
+        toast.success('Transfer completed')
+        navigate('/transactions')
+      }else if(makeTransfer.rejected.match(result)){
+        toast.error(result.payload as string)
+      }
     } catch (error) {
       console.log('Transfer failed ',error)
+      
     }
   }
   
@@ -70,7 +75,8 @@ const {
               {...register("from_account_id", { required: "Account is required" })}
             >
               <option value="">Choose your account</option>
-              {accounts.map((account) => (
+             { accounts.filter(account=>account.balance>0)
+              .map((account) => (
                 <option key={account.id} value={account.id}>
                   {account.account_type} - {account.account_number} (${account.balance})
                 </option>
@@ -119,7 +125,7 @@ const {
           <button 
             type="submit" 
             disabled={loading}
-            className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-3 rounded-xl hover:from-blue-700 hover:to-indigo-700 shadow-lg shadow-blue-500/30 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed font-semibold mt-6 flex justify-center items-center gap-2"
+            className="w-full bg-linear-to-r from-blue-600 to-indigo-600 text-white py-3 rounded-xl hover:from-blue-700 hover:to-indigo-700 shadow-lg shadow-blue-500/30 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed font-semibold mt-6 flex justify-center items-center gap-2"
           >
             {loading ? (
               <>

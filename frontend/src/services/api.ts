@@ -4,10 +4,8 @@ import { setCredentials, logout } from "../store/slices/authSlice";
 import { store } from "../store";
 
 
-let refreshPromise: Promise<string> | null = null;
-
 const api = axios.create({
-  baseURL: "https://bank-management-system-4-d2qx.onrender.com/api",
+  baseURL: "http://localhost:5000/api/",
   withCredentials: true,
 });
 
@@ -32,35 +30,28 @@ api.interceptors.response.use(
     if (
       error.response?.status === 401 &&
       !originalRequest._retry &&
-      originalRequest.url !== "/auth/refresh-token"
+      !originalRequest.url.includes("refresh-token")
     ) {
       originalRequest._retry = true;
 
       try {
-        if (!refreshPromise) {
-          
-          refreshPromise = api
-            .post("/auth/refresh-token")
-            .then((res) => {
-              const token = res.data.accessToken;
-
-              store.dispatch(setCredentials({ accessToken: token }));
-
-              return token;
-            })
-            .finally(() => {
-              
-              refreshPromise = null;
-            });
-        }
-
-        const newToken = await refreshPromise;
-
-        originalRequest.headers.Authorization = `Bearer ${newToken}`;
+        const res=await api.post('auth/refresh-token',{},
+          {
+            withCredentials:true
+          }
+        );
+        const newAccessToken=res.data.accessToken
+       
+        store.dispatch(setCredentials({accessToken:newAccessToken}))
+        localStorage.setItem("accessToken",newAccessToken)
+        
+        originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
 
         return api(originalRequest);
       } catch (err) {
         store.dispatch(logout());
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('user');
         window.location.href = "/login";
         return Promise.reject(err);
       }
